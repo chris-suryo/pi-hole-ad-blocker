@@ -1,0 +1,16 @@
+# Home Assistant (container install). Optional: only worth it if you have smart-home devices.
+# Runs on the Pi. Start: ./stacks/up.sh home-assistant    Open: http://homepi:8123
+# The container install has no add-on store; run anything extra as its own container.
+services:
+  home-assistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: home-assistant
+    restart: unless-stopped
+    network_mode: host # device discovery (mDNS, UPnP) needs the host network
+    privileged: true # USB radios (Zigbee/Z-Wave sticks) and Bluetooth
+    volumes:
+      - ${APPDATA:-/srv/appdata}/home-assistant:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    environment:
+      - TZ=${TZ:-Etc/UTC}

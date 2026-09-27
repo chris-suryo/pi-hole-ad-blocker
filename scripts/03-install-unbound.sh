@@ -16,7 +16,7 @@ info "Checking the root DNS servers are reachable directly (a.root-servers.net)"
 if [[ "$(dns_status @198.41.0.4 . NS +norec)" == NOERROR ]]; then
   ok "Root servers reachable, no interception"
 else
-  die "Can't query a.root-servers.net directly. Your ISP or router may be intercepting DNS. Keep Pi-hole's current upstream and see docs/08."
+  die "Can't query a.root-servers.net directly. Your ISP or router may be intercepting DNS. Keep Pi-hole's current upstream and see docs/09."
 fi
 
 info "Installing Unbound"

@@ -1,77 +1,88 @@
-# homepi: Raspberry Pi 5 home server kit
+# homelab: Raspberry Pi 5 + media PC
 
-Step-by-step kit for turning a Raspberry Pi 5 into an always-on home server:
+Step-by-step kit for a small home setup built from two machines you already own:
 
-- **Network-wide ad and tracker blocking:** Pi-hole + Unbound (private DNS)
-- **Secure remote access:** Tailscale (reach home from anywhere, ad-blocking on cellular)
-- **Monitoring:** Uptime Kuma
-- **Later:** a media server (Jellyfin or Plex), photo backup to replace iCloud
-  (Immich), and file shares/Time Machine
+- **Raspberry Pi 5 (`homepi`), the always-on network box:** network-wide ad and
+  tracker blocking (Pi-hole + Unbound), secure remote access (Tailscale),
+  monitoring (Uptime Kuma), and optionally Portainer and Home Assistant.
+- **Old i7-8700K PC (`mediabox`), the media and storage box:** Jellyfin and/or Plex
+  with Intel Quick Sync hardware transcoding, Immich to replace iCloud Photos, Mac
+  file shares and Time Machine, and backups.
+
+DNS stays on the low-power Pi, so the internet keeps working when the PC reboots.
+The heavy work (video, photos, drives) goes to the PC.
 
 > **Status:** kit written; nothing installed yet. Work through the phases in order.
-> Phase 6 (storage) needs decisions first; see [research questions](docs/research-questions.md).
+> Drive sizes and backups need decisions first; see [research questions](docs/research-questions.md).
 
 ## What ends up running
 
 ```
 Internet
    │
-Xfinity gateway ── bridge mode: modem only
+Xfinity gateway ─── bridge mode: modem only
    │
-AX5400 router ──── Wi-Fi + DHCP; tells every device "use the Pi for DNS"
-   │ Ethernet
-Raspberry Pi 5 "homepi" (192.168.77.53)
-   ├── Pi-hole     :53, :80/admin   blocks ad/tracker domains for the whole house
-   ├── Unbound     :5335 (local)    resolves privately, checks DNSSEC
-   ├── Tailscale                    home network + ad-blocking from anywhere
-   └── Docker
-        ├── Uptime Kuma  :3001      alerts when something's down
-        ├── Jellyfin     :8096      movies/TV (or Plex :32400)     ┐ Phase 6,
-        └── Immich       :2283      iCloud Photos replacement      ┘ needs a drive
+AX5400 router ───── Wi-Fi + DHCP; tells every device "use the Pi for DNS"
+   │ Ethernet                           │ Ethernet
+   ▼                                    ▼
+homepi  Raspberry Pi 5 (.53)          mediabox  i7-8700K PC (.20)
+ ├─ Pi-hole     :53, /admin            ├─ Jellyfin  :8096   ┐ Quick Sync
+ ├─ Unbound     :5335 (local)          ├─ Plex      :32400  ┘ transcoding
+ ├─ Tailscale   subnet + exit node     ├─ Immich    :2283   photos
+ └─ Docker                             ├─ Samba             shares + Time Machine
+     ├─ Uptime Kuma    :3001           ├─ Tailscale
+     ├─ Portainer      :9443 (opt.)    └─ /srv/storage      data drive(s)
+     └─ Home Assistant :8123 (opt.)
 ```
 
 ## Phases
 
-| # | Phase | Guide | Time |
-|---|---|---|---|
-| 0 | Decisions and shopping | [below](#before-you-start) | — |
-| 1 | Xfinity gateway to bridge mode, AX5400 as router | [02-network-router](docs/02-network-router.md) | 45–60 min |
-| 2 | Move the Pi off the robot, fresh OS, fixed address, bootstrap | [03-pi-prep-and-os](docs/03-pi-prep-and-os.md) | ~1 h |
-| 3 | Pi-hole + Unbound, then point the router at it | [04-pihole-unbound](docs/04-pihole-unbound.md) | ~30 min |
-| 4 | Tailscale: subnet router, exit node, Pi-hole everywhere | [05-tailscale](docs/05-tailscale.md) | ~20 min |
-| 5 | Docker + Uptime Kuma | [06-docker-apps](docs/06-docker-apps.md) | ~15 min |
-| 6 | Storage, Jellyfin/Plex, Immich, Samba, backups | [07-storage-media-photos](docs/07-storage-media-photos.md) | varies |
-| — | Routine care and fixes | [08-maintenance-troubleshooting](docs/08-maintenance-troubleshooting.md) | — |
+| # | Phase | Machine | Guide | Time |
+|---|---|---|---|---|
+| 0 | Decisions and shopping | — | [below](#before-you-start) | — |
+| 1 | Xfinity gateway to bridge mode, AX5400 as router | Router | [02-network-router](docs/02-network-router.md) | 45–60 min |
+| 2 | Move the Pi off the robot, fresh OS, fixed address | Pi | [03-pi-prep-and-os](docs/03-pi-prep-and-os.md) | ~1 h |
+| 3 | Pi-hole + Unbound, then point the router at it | Pi | [04-pihole-unbound](docs/04-pihole-unbound.md) | ~30 min |
+| 4 | Tailscale: subnet router, exit node, Pi-hole everywhere | Pi | [05-tailscale](docs/05-tailscale.md) | ~20 min |
+| 5 | Docker + Uptime Kuma (+ optional Portainer, Home Assistant) | Pi | [06-docker-apps](docs/06-docker-apps.md) | ~15 min |
+| 6 | Media PC: hardware, BIOS, Ubuntu Server, drives | PC | [07-mediabox-setup](docs/07-mediabox-setup.md) | 2–3 h |
+| 7 | Jellyfin/Plex, Immich, Samba, backups | PC | [08-mediabox-apps](docs/08-mediabox-apps.md) | varies |
+| — | Routine care and fixes | Both | [09-maintenance-troubleshooting](docs/09-maintenance-troubleshooting.md) | — |
 
-Each phase ends with checks and a rollback. `./scripts/verify.sh` checks everything
-installed so far and skips the rest.
+Phases 1–5 don't depend on the PC, and 6–7 only need Phase 1. `./scripts/verify.sh`
+checks whatever is installed on the machine it runs on.
 
 ## Before you start
 
 **Answer** (these change the instructions):
 1. Exact AX5400 model from the sticker (TP-Link / ASUS / Netgear menus differ; Netgear can't hand out a custom DNS server).
-2. Can the Pi sit next to the router on Ethernet?
-3. The storage/media questions in [research-questions.md](docs/research-questions.md). Needed for Phase 6 only.
+2. Does the PC's case have 3.5" drive bays, and are you OK leaving it on 24/7? (Roughly $40–70/yr in electricity with the GTX 1070 Ti removed, depending on your rate.)
+3. Any smart-home devices? That decides whether Home Assistant is worth setting up.
+4. The storage questions in [research-questions.md](docs/research-questions.md). Needed for Phases 6–7.
 
 **Buy or gather:**
-- [ ] **New microSD**, 32–64 GB, A2. The robot's 128 GB card stays untouched.
-- [ ] **Ethernet cable**, router to Pi.
+- [ ] **New microSD**, 32–64 GB, A2, for the Pi. The robot's 128 GB card stays untouched.
+- [ ] **2 Ethernet cables**: router to Pi, router to PC.
 - [ ] **52Pi case: keep or return this week.** It was bought around 13 Sep ([details](docs/01-hardware-inventory.md#spares-and-parts-from-the-robot-build)).
-- [ ] Later, only for bus-powered drives: **official 27 W PSU**. The Apple 20 W caps USB at 600 mA ([why](docs/01-hardware-inventory.md#power-the-one-conclusion-that-changes)).
+- [ ] For the PC: **NVMe boot SSD** (500 GB–1 TB), a **USB stick**, and **hard drive(s)**, sized after research.
+
+The Pi stays on the Apple 20 W charger. No drives hang off it, so the 27 W PSU isn't needed.
 
 ## Layout
 
 ```
-docs/          phase guides, hardware inventory, research questions
-scripts/       run on the Pi, in order; safe to re-run; verify.sh = health check
-config/        Unbound and Samba config used by the scripts/guides
-stacks/        Docker apps: ./stacks/up.sh <name>; Immich: stacks/immich/setup.sh
+docs/               phase guides, hardware inventory, research questions
+scripts/            Pi scripts, run in order; 05-install-docker.sh and verify.sh work on both machines
+scripts/mediabox/   media PC scripts
+config/             Unbound (Pi) and Samba (PC) config
+stacks/             Docker apps: ./stacks/up.sh <name>; Immich: stacks/immich/setup.sh
 ```
 
 ## Conventions
 
-- Example addresses: LAN `192.168.77.0/24`, router `.1`, Pi `.53`, hostname `homepi`.
+- Addresses: LAN `192.168.77.0/24`, router `.1`, Pi `.53` (`homepi`), PC `.20` (`mediabox`).
   Substitute yours if you choose differently in Phase 1.
-- Scripts run **on the Pi as your normal user** from `~/homepi`; they `sudo` when needed.
+- The kit is cloned to `~/homelab` on each machine. Scripts run as your normal user and `sudo` when needed.
 - **This repo is public.** No passwords, keys, tokens or `.env` files go in it
   (`.gitignore` covers the generated ones). App data lives in `/srv/appdata`, outside the checkout.
+- **Not included:** torrent/download automation (qBittorrent, Sonarr, Radarr).

@@ -1,13 +1,16 @@
-# Jellyfin: free, open-source media server (the default choice here; see docs/07).
-# Start: ./stacks/up.sh jellyfin    Open: http://homepi.local:8096
-# The Pi 5 has no hardware video encoder: leave hardware acceleration OFF in
-# Jellyfin's settings and prefer files your TV/phone can play directly.
+# Jellyfin: free media server with free hardware transcoding. Runs on the media PC.
+# Start: ./stacks/up.sh jellyfin    Open: http://mediabox:8096
+# Then Dashboard > Playback > Transcoding: Intel QuickSync (QSV). See docs/08-mediabox-apps.md.
 services:
   jellyfin:
     image: jellyfin/jellyfin:latest
     container_name: jellyfin
     restart: unless-stopped
     user: "${PUID:-1000}:${PGID:-1000}"
+    group_add:
+      - "${RENDER_GID:?set RENDER_GID in stacks/.env (getent group render | cut -d: -f3)}"
+    devices:
+      - /dev/dri:/dev/dri # Intel Quick Sync
     ports:
       - "8096:8096"
       - "7359:7359/udp" # lets apps on the LAN discover the server

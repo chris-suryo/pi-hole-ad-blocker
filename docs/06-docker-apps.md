@@ -10,7 +10,7 @@ that way. Everything else runs in Docker.
 ## 1. Install Docker
 
 ```bash
-cd ~/homepi
+cd ~/homelab
 ./scripts/05-install-docker.sh
 exit          # log out so the docker group applies, then ssh back in
 docker ps     # should work without sudo
@@ -42,7 +42,7 @@ create the admin account. Add monitors:
 | Pi-hole web | HTTP | `http://192.168.77.53/admin` |
 | Router | Ping | `192.168.77.1` |
 | Internet | Ping | `1.1.1.1` |
-| Each app you add later | HTTP | e.g. `http://192.168.77.53:8096` |
+| Media PC apps (Phase 7) | HTTP | listed in [08-mediabox-apps.md](08-mediabox-apps.md#8-monitoring-and-dashboard) |
 
 **Notifications:** Settings → Notifications. The free **ntfy** app (iOS/Android)
 is the least fuss. Pushover, Discord and email also work.
@@ -58,6 +58,39 @@ crontab -e
 ```
 
 If the pings stop, healthchecks.io emails or pushes you.
+
+## Optional: Portainer dashboard
+
+A web page for your containers: status, logs, restart buttons.
+
+```bash
+./stacks/up.sh portainer
+```
+
+Open `https://homepi.local:9443` and accept the self-signed certificate warning.
+Create the admin account within a few minutes of starting, or Portainer locks
+itself for safety (`docker restart portainer` to retry).
+
+**Ground rule:** use it to *look and restart*. Add or change apps through the
+compose files in `stacks/`, so the repo always describes what's running. Apps
+created inside Portainer exist nowhere else.
+
+Portainer controls Docker, which is root-level control of the Pi. It's only
+reachable on your LAN and tailnet. Keep it that way.
+
+## Optional: Home Assistant
+
+Only worth it if you have smart-home devices (lights, plugs, thermostat, cameras)
+or plan to buy some.
+
+```bash
+./stacks/up.sh home-assistant
+```
+
+Open `http://homepi.local:8123` and follow the onboarding. It finds many devices on
+the network automatically. This is the container install, which has no add-on
+store. For Zigbee or Z-Wave devices you'll later want a USB radio stick; the
+compose file already gives it USB access.
 
 ## Day-to-day
 

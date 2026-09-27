@@ -33,7 +33,7 @@ else
 fi
 
 iface="$(lan_iface)"
-if [[ "$iface" == eth* ]]; then
+if is_wired "$iface"; then
   ok "Online via $iface ($(lan_ip))"
 else
   warn "Online via ${iface:-nothing}. A DNS server should be on wired Ethernet."

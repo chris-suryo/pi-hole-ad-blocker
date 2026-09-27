@@ -67,8 +67,8 @@ cable, a Mac with [Raspberry Pi Imager](https://www.raspberrypi.com/software/).
 1. Get this kit onto the Pi:
    ```bash
    sudo apt update && sudo apt install -y git
-   git clone https://github.com/chris-suryo/pi-hole-ad-blocker.git ~/homepi
-   cd ~/homepi
+   git clone https://github.com/chris-suryo/pi-hole-ad-blocker.git ~/homelab
+   cd ~/homelab
    ```
    If the kit isn't on the default branch yet, add
    `-b claude/dazzling-bell-p7pqqj` to the clone command.
@@ -79,7 +79,7 @@ cable, a Mac with [Raspberry Pi Imager](https://www.raspberrypi.com/software/).
    ```
 3. Reconnect and check health:
    ```bash
-   cd ~/homepi && ./scripts/verify.sh
+   cd ~/homelab && ./scripts/verify.sh
    ```
    Expect: `throttled=0x0`, temperature well under 70 °C, "Wired: eth0". A supply
    warning at 3000 mA is expected with the Apple 20 W charger.

@@ -8,7 +8,7 @@ require_pi_os
 iface="$(lan_iface)"
 ip="$(lan_ip)"
 info "This Pi is ${ip} on ${iface}."
-[[ "$iface" == eth* ]] || warn "Not on Ethernet. Wired is strongly recommended for a DNS server."
+is_wired "$iface" || warn "Not on Ethernet. Wired is strongly recommended for a DNS server."
 
 cat <<EOF
 

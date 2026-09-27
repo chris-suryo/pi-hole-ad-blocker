@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Phase 5: Docker Engine + Compose, for the apps in stacks/. Safe to re-run.
+# Docker Engine + Compose for the apps in stacks/. Used on both the Pi (Phase 5)
+# and the media PC (Phase 7). Safe to re-run.
 # shellcheck source=scripts/common.sh
 source "$(dirname "$0")/common.sh"
 require_not_root
-require_pi_os
+require_debian
 
 if ! command -v docker >/dev/null 2>&1; then
   info "Installing Docker (official convenience script)"

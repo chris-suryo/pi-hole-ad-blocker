@@ -15,7 +15,7 @@ device ──"ads.example.com?"──▶ Pi-hole :53 ── on a blocklist? ─�
 ## 1. Install Pi-hole
 
 ```bash
-cd ~/homepi
+cd ~/homelab
 ./scripts/02-install-pihole.sh
 ```
 

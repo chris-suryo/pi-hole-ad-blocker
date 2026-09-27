@@ -19,7 +19,7 @@ Install the Tailscale app on each and sign in with the same account.
 ## 2. Install on the Pi
 
 ```bash
-cd ~/homepi
+cd ~/homelab
 ./scripts/04-install-tailscale.sh
 ```
 
@@ -61,6 +61,8 @@ On iPhone, set the Tailscale app's VPN to reconnect on demand so it stays on.
 - **Subnet clashes:** if a network you're on also uses `192.168.77.x`, home
   addresses may be unreachable there. That's why Phase 1 picked an uncommon range.
 - **Never port-forward** 53, 80, 22 or anything else to the Pi. Tailscale replaces all of that.
+- **The media PC joins the tailnet itself** in Phase 6, so it's reachable as `mediabox`
+  directly rather than through the Pi's subnet route. That's faster for video.
 
 ## Rollback
 

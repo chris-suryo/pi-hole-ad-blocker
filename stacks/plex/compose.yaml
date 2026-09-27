@@ -1,14 +1,16 @@
-# Plex: alternative to Jellyfin. Run one or the other, not both.
+# Plex. Runs on the media PC, alongside or instead of Jellyfin (same media, read-only).
 # 1. Get a claim token (valid 4 minutes): https://www.plex.tv/claim
 # 2. PLEX_CLAIM=claim-xxxx ./stacks/up.sh plex
-# 3. Open http://homepi.local:32400/web
-# Remote streaming of your own media needs a paid Plex plan; see docs/07.
+# 3. Open http://mediabox:32400/web
+# Hardware transcoding and streaming outside the home need Plex Pass; see docs/08-mediabox-apps.md.
 services:
   plex:
     image: lscr.io/linuxserver/plex:latest
     container_name: plex
     restart: unless-stopped
     network_mode: host # Plex's LAN discovery needs host networking
+    devices:
+      - /dev/dri:/dev/dri # Intel Quick Sync (the image grants itself access)
     environment:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}

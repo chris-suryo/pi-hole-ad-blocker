@@ -52,7 +52,7 @@ section "Network"
 iface="$(lan_iface)"
 if [[ -z "$iface" ]]; then
   bad "No default route: the Pi is offline"
-elif [[ "$iface" == eth* ]]; then
+elif is_wired "$iface"; then
   pass "Wired: ${iface} $(lan_ip) on $(lan_cidr)"
 else
   soft "Using ${iface} $(lan_ip). Wired Ethernet is recommended"
@@ -148,6 +148,27 @@ if have docker; then
   fi
 else
   info "Docker not installed yet: skipped"
+fi
+
+if ! is_pi; then
+  section "Quick Sync"
+  if node="$(intel_render_node)"; then
+    pass "Intel iGPU available for hardware transcoding: ${node}"
+  else
+    bad "No Intel iGPU render node. Enable the iGPU in the BIOS (docs/07-mediabox-setup.md)"
+  fi
+fi
+
+if have smartctl; then
+  section "Disk health (SMART)"
+  while read -r disk; do
+    health="$(sudo smartctl -H "/dev/$disk" 2>/dev/null | grep -Eo 'PASSED|FAILED|OK' | head -1)"
+    case "$health" in
+      PASSED|OK) pass "/dev/${disk} SMART ${health}" ;;
+      FAILED)    bad "/dev/${disk} SMART FAILED: back it up and replace it now" ;;
+      *)         info "/dev/${disk}: no SMART data (USB bridge or virtual disk)" ;;
+    esac
+  done < <(lsblk -dno NAME,TYPE | awk '$2 == "disk" && $1 !~ /^(mmcblk|zram|loop)/ {print $1}')
 fi
 
 section "Storage"

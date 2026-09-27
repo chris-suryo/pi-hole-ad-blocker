@@ -8,44 +8,33 @@ lives in that project's repo. This page keeps only what matters for server use.
 
 | Item | Value | Server implication |
 |---|---|---|
-| Board | Raspberry Pi 5, **8 GB**, Rev 1.1 (bought open-box) | Plenty of headroom for Pi-hole + Tailscale + a few Docker apps, including Immich |
+| Board | Raspberry Pi 5, **8 GB**, Rev 1.1 (bought open-box) | Plenty for Pi-hole, Unbound, Tailscale, Uptime Kuma, Portainer and Home Assistant |
 | Health | `throttled=0x0`, all sticky bits clear | Good. `scripts/verify.sh` re-checks this every run |
 | Cooling | Official Active Cooler fitted | Keep it. 51–52 °C plateau under 120 s full load, no throttling |
 | Bootloader | 2025-06-13 | Fine. The server OS will keep it updated (see "Going back to the robot") |
 | OS on robot card | Raspberry Pi OS 64-bit, Debian 13 "Trixie" | **Don't reuse.** The server gets a fresh card |
 | Storage | 128 GB microSD, the robot's card | **Stays with the robot, untouched** |
 
-## Power: the one conclusion that changes
+## Power
 
-On the robot the Apple 20 W USB-C charger (5 V / 3 A) was measured rock solid:
-9 mV sag from idle to full load. The robot notes concluded "you don't need
-the 27 W official PSU." **That was right for the robot. It's wrong for a
-storage server.**
+On the robot, the Apple 20 W USB-C charger (5 V / 3 A) was measured rock solid:
+9 mV sag from idle to full load. **It stays the Pi's supply.** With a 3 A supply the
+Pi 5 limits all USB ports combined to 600 mA, but that only matters for drives
+powered from the Pi's USB. The drives now live in the media PC
+([07-mediabox-setup.md](07-mediabox-setup.md)), so the official 27 W PSU isn't needed.
 
-- With a 3 A supply, the Pi 5 limits **all USB ports combined to 600 mA**.
-- A bus-powered 2.5" hard drive or portable SSD can draw more than that, and
-  more still when it spins up. The result is random disconnects and filesystem
-  corruption.
-- The official **27 W (5 V / 5 A) supply** raises the USB budget to 1.6 A.
-
-| Plan | Apple 20 W OK? |
-|---|---|
-| Pi-hole, Unbound, Tailscale, Docker apps (Phases 1–5) | Yes |
-| Drives with their own power adapter (3.5" desktop enclosures) | Yes |
-| Bus-powered USB SSD/HDD, or an NVMe HAT | **No. Buy the 27 W PSU** |
-
-`scripts/01-bootstrap.sh` and `scripts/verify.sh` read the negotiated limit
-(`/proc/device-tree/chosen/power/max_current`: 3000 = 3 A, 5000 = 5 A) and warn
-if it's low.
+`scripts/verify.sh` still reports the negotiated limit
+(`/proc/device-tree/chosen/power/max_current`: 3000 = 3 A, 5000 = 5 A). A warning
+at 3000 mA is expected and harmless unless you plug a drive into the Pi.
 
 ## Spares and parts from the robot build
 
 | Part | Status | Decision |
 |---|---|---|
 | **Raspberry Pi RTC battery** (official, 2-pin JST) | Never fitted: the robot sandwich had to come apart | **Fit it now** (Phase 2). Keeps the clock right through power cuts, which DNSSEC needs |
-| **52Pi aluminium case + fan** | Didn't fit the robot. Bought around 13 Sep, so the return window is probably closing | **Decide this week.** Keep it only if it fits a Pi 5 *with the Active Cooler* (and an M.2 HAT if you'll go NVMe). If it needs the cooler removed, return it |
+| **52Pi aluminium case + fan** | Didn't fit the robot. Bought around 13 Sep, so the return window is probably closing | **Decide this week.** Keep it only if it fits a Pi 5 *with the Active Cooler*. If it needs the cooler removed, return it |
 | Spare black active cooler (4-wire JST) | Unused, lower spec than the fitted one | Keep as a spare |
-| Apple 20 W PD (A2305) | Proven | Fine until you add bus-powered drives |
+| Apple 20 W PD (A2305) | Proven | Stays the Pi's supply |
 
 A case is optional. A Pi 5 with the Active Cooler is fine running bare on a
 shelf, as long as nothing metal can touch the underside.
@@ -70,11 +59,17 @@ None of this belongs on the server. Using a fresh card makes that automatic:
    address no longer exists. Give it a new DHCP reservation on the AX5400 and
    update the robot docs.
 
+## The media PC
+
+The old i7-8700K PC becomes `mediabox`. Specs and what they mean are in
+[07-mediabox-setup.md](07-mediabox-setup.md#the-hardware-as-built).
+
 ## Shopping list
 
-| Item | Why | Needed by |
+| Item | For | Needed by |
 |---|---|---|
-| microSD, 32–64 GB, A2 rated (e.g. SanDisk Extreme / Samsung PRO Plus) | Server OS; the robot card stays untouched | Phase 2 |
-| Ethernet cable, router to Pi | A DNS server should be wired | Phase 2 |
-| Official Raspberry Pi 27 W USB-C PSU | USB power budget for drives | Phase 6 (only for bus-powered drives) |
-| Storage drive(s) | Media and photos | Phase 6: **decide after research** (docs/07) |
+| microSD, 32–64 GB, A2 rated (e.g. SanDisk Extreme / Samsung PRO Plus) | Pi OS; the robot card stays untouched | Phase 2 |
+| 2 Ethernet cables | Router to Pi, router to media PC | Phases 2 and 6 |
+| NVMe SSD, 500 GB–1 TB | Media PC boot drive | Phase 6 |
+| USB stick, 8 GB+ | Ubuntu installer | Phase 6 |
+| Hard drive(s) | Media PC data + backup: **size them after research** | Phase 6 |

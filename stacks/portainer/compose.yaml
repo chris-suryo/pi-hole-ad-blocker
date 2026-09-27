@@ -1,0 +1,14 @@
+# Portainer: web dashboard for containers on the Pi (and the media PC via its agent).
+# Start: ./stacks/up.sh portainer    Open: https://homepi:9443 (self-signed certificate)
+# Use it to look at logs and restart things. The compose files in this repo stay the
+# source of truth: don't create or edit stacks inside Portainer.
+services:
+  portainer:
+    image: portainer/portainer-ce:lts
+    container_name: portainer
+    restart: unless-stopped
+    ports:
+      - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${APPDATA:-/srv/appdata}/portainer:/data

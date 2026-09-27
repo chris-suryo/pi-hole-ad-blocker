@@ -2,6 +2,7 @@
 .env
 stacks/immich/docker-compose.yml
 stacks/immich/example.env
+stacks/immich/hwaccel.transcoding.yml
 
 # Pi-hole Teleporter exports and disk images
 *teleporter*.zip

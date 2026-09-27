@@ -5,7 +5,7 @@
 #
 #   ./stacks/immich/setup.sh            # first time; won't overwrite an existing .env
 #   cd stacks/immich && docker compose up -d
-#   Open http://homepi.local:2283
+#   Open http://mediabox:2283
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 cd "$here"
@@ -22,7 +22,9 @@ DB_DATA_LOCATION="${DB_DATA_LOCATION:-$APPDATA/immich/postgres}"
 base=https://github.com/immich-app/immich/releases/latest/download
 curl -fsSL -o docker-compose.yml "$base/docker-compose.yml"
 curl -fsSL -o example.env "$base/example.env"
-echo "Downloaded the latest official docker-compose.yml and example.env"
+# Optional Quick Sync video transcoding; enabled by hand (docs/08-mediabox-apps.md).
+curl -fsSL -o hwaccel.transcoding.yml "$base/hwaccel.transcoding.yml"
+echo "Downloaded the latest official docker-compose.yml, example.env and hwaccel.transcoding.yml"
 
 if [[ -f .env ]]; then
   echo ".env already exists; left unchanged. Delete it to regenerate."

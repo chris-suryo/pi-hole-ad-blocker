@@ -27,12 +27,24 @@ require_not_root() {
   [[ $EUID -ne 0 ]] || die "Run as your normal user, not root. The script calls sudo itself."
 }
 
-require_pi_os() {
-  [[ "$(uname -m)" == "aarch64" ]] || die "Expected 64-bit Raspberry Pi OS (aarch64), got $(uname -m)."
+# Debian, Raspberry Pi OS or Ubuntu, any architecture.
+require_debian() {
   # shellcheck source=/dev/null
   . /etc/os-release
   [[ "${ID:-}" == "debian" || "${ID_LIKE:-}" == *debian* ]] || die "Expected a Debian-based OS, got ${ID:-unknown}."
 }
+
+is_pi() { grep -qs "Raspberry Pi" /proc/device-tree/model; }
+
+require_pi_os() {
+  is_pi || die "This script is for the Raspberry Pi. On the media PC use scripts/mediabox/."
+  [[ "$(uname -m)" == "aarch64" ]] || die "Expected 64-bit Raspberry Pi OS (aarch64), got $(uname -m)."
+  require_debian
+}
+
+# Wired interfaces are eth0 on the Pi but enp0s31f6-style on a PC; wireless ones
+# are the ones with a /sys/class/net/<if>/wireless directory.
+is_wired() { [[ -n "$1" && ! -d "/sys/class/net/$1/wireless" ]]; }
 
 # Interface carrying the default route (eth0 when wired, which is what we want).
 lan_iface() {
@@ -53,4 +65,13 @@ lan_cidr() {
 psu_max_ma() {
   local f=/proc/device-tree/chosen/power/max_current
   [[ -r $f ]] && od -An -tu4 --endian=big "$f" | tr -d ' '
+}
+
+# /dev/dri/renderDxxx belonging to the Intel iGPU (Quick Sync), if the BIOS exposes it.
+intel_render_node() {
+  local n
+  for n in /sys/class/drm/renderD*; do
+    [[ "$(cat "$n/device/vendor" 2>/dev/null)" == 0x8086 ]] && { echo "/dev/dri/${n##*/}"; return 0; }
+  done
+  return 1
 }
