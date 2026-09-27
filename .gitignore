@@ -1,0 +1,9 @@
+# This repo is public. Secrets and per-machine settings stay on the Pi.
+.env
+stacks/immich/docker-compose.yml
+stacks/immich/example.env
+
+# Pi-hole Teleporter exports and disk images
+*teleporter*.zip
+*.img
+*.img.gz

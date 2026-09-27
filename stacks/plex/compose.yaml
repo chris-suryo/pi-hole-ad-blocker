@@ -1,0 +1,20 @@
+# Plex: alternative to Jellyfin. Run one or the other, not both.
+# 1. Get a claim token (valid 4 minutes): https://www.plex.tv/claim
+# 2. PLEX_CLAIM=claim-xxxx ./stacks/up.sh plex
+# 3. Open http://homepi.local:32400/web
+# Remote streaming of your own media needs a paid Plex plan; see docs/07.
+services:
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    restart: unless-stopped
+    network_mode: host # Plex's LAN discovery needs host networking
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Etc/UTC}
+      - VERSION=docker
+      - PLEX_CLAIM=${PLEX_CLAIM:-}
+    volumes:
+      - ${APPDATA:-/srv/appdata}/plex:/config
+      - ${MEDIA_DIR:-/srv/storage/media}:/media:ro

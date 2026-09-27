@@ -1,0 +1,13 @@
+# Uptime Kuma: dashboard + alerts when Pi-hole, the router or an app stops responding.
+# Start: ./stacks/up.sh uptime-kuma    Open: http://homepi.local:3001
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:2
+    container_name: uptime-kuma
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - ${APPDATA:-/srv/appdata}/uptime-kuma:/app/data
+    environment:
+      - TZ=${TZ:-Etc/UTC}

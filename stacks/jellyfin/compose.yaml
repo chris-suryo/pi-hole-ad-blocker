@@ -1,0 +1,20 @@
+# Jellyfin: free, open-source media server (the default choice here; see docs/07).
+# Start: ./stacks/up.sh jellyfin    Open: http://homepi.local:8096
+# The Pi 5 has no hardware video encoder: leave hardware acceleration OFF in
+# Jellyfin's settings and prefer files your TV/phone can play directly.
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    restart: unless-stopped
+    user: "${PUID:-1000}:${PGID:-1000}"
+    ports:
+      - "8096:8096"
+      - "7359:7359/udp" # lets apps on the LAN discover the server
+    volumes:
+      - ${APPDATA:-/srv/appdata}/jellyfin:/config
+      - ${MEDIA_DIR:-/srv/storage/media}:/media:ro
+    environment:
+      - TZ=${TZ:-Etc/UTC}
+      # Keep the cache inside the one data folder up.sh creates.
+      - JELLYFIN_CACHE_DIR=/config/cache
