@@ -66,10 +66,31 @@ The old i7-8700K PC becomes `mediabox`. Specs and what they mean are in
 
 ## Shopping list
 
-| Item | For | Needed by |
+### Buy now
+
+| Item | What to get | Why |
 |---|---|---|
-| microSD, 32–64 GB, A2 rated (e.g. SanDisk Extreme / Samsung PRO Plus) | Pi OS; the robot card stays untouched | Phase 2 |
-| 2 Ethernet cables | Router to Pi, router to media PC | Phases 2 and 6 |
-| NVMe SSD, 500 GB–1 TB | Media PC boot drive | Phase 6 |
-| USB stick, 8 GB+ | Ubuntu installer | Phase 6 |
-| Hard drive(s) | Media PC data + backup: **size them after research** | Phase 6 |
+| microSD for the Pi | 32–64 GB, A2 rated (SanDisk Extreme, Samsung PRO Plus) | Pi OS; the robot card stays untouched |
+| 2 Ethernet cables | Cat 6, lengths to suit | Router to Pi, router to media PC |
+| NVMe SSD, 1 TB | Any reputable PCIe 3.0 or 4.0 drive (WD Blue SN5000, Crucial P3 Plus, Samsung 990 EVO Plus). The Z370 runs it at PCIe 3.0 speed, so don't pay extra for Gen 5 | Media PC boot drive: OS, Docker, app databases |
+| **2 identical hard drives, 16–20 TB** | Best value: **recertified enterprise** (Seagate Exos X18/X20/X22, WD Ultrastar HC550/HC560) from ServerPartDeals or goHardDrive, with at least a 2-year warranty. New alternative: Seagate IronWolf Pro, WD Red Pro, Toshiba N300/MG. Must be **CMR**; avoid plain WD Red and Barracuda (SMR). Buy whichever size is cheapest per TB that day | Two identical drives let you mirror them now (each holds a full copy) or split them into data + backup later. Usable space is one drive's worth. Enterprise drives are loud, which is fine out of the way |
+| USB stick, 8 GB+ | Any | Ubuntu installer |
+
+Tips: check the motherboard box for SATA data cables before buying more.
+Buying the two drives from different sellers, or a few days apart, avoids a
+matched pair from one bad batch.
+
+### Recommended ("run it like a small business")
+
+| Item | What to get | Why |
+|---|---|---|
+| UPS (battery backup) | Line-interactive, **pure sine wave**, 1000–1500 VA, with a USB port (e.g. CyberPower CP1500PFCLCD, APC Back-UPS Pro BR1500MS2) | Rides through power blips and gives a clean shutdown on long outages. It protects the drives and keeps internet up. Pure sine suits the CX650M's active-PFC power supply. Plug in the PC, Pi, router and modem |
+| Molex-to-SATA power adapter, crimped (not molded) | Any | Only if a recertified drive won't spin up ([why](07a-hardware-walkthrough.md#troubleshooting)) |
+
+### Not needed
+
+- **More RAM:** 16 GB covers everything planned.
+- **27 W Pi power supply:** no drives on the Pi.
+- **Zigbee/Thread USB stick:** your HomePod mini already acts as the Thread hub.
+  Revisit only if you buy Zigbee devices.
+- **Domain name:** later, for the HTTPS names in [10-pro-layer.md](10-pro-layer.md).

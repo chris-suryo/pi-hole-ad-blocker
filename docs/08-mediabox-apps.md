@@ -92,7 +92,7 @@ Quick Sync in Administration → Settings → Video Transcoding.
 
 **Keep iCloud running** until Immich has everything and you've tested a restore
 from backup. Migrating the existing library (originals, Live Photos, albums) is
-its own step; see [research-questions.md](research-questions.md).
+its own step; see [research-brief.md](research-brief.md).
 
 ## 6. File shares and Time Machine (Samba)
 

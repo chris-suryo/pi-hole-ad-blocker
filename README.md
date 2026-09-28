@@ -13,7 +13,7 @@ DNS stays on the low-power Pi, so the internet keeps working when the PC reboots
 The heavy work (video, photos, drives) goes to the PC.
 
 > **Status:** kit written; nothing installed yet. Work through the phases in order.
-> Drive sizes and backups need decisions first; see [research questions](docs/research-questions.md).
+> Drive sizes and backups need decisions first; see [research brief](docs/research-brief.md).
 
 ## What ends up running
 
@@ -45,8 +45,9 @@ homepi  Raspberry Pi 5 (.53)          mediabox  i7-8700K PC (.20)
 | 3 | Pi-hole + Unbound, then point the router at it | Pi | [04-pihole-unbound](docs/04-pihole-unbound.md) | ~30 min |
 | 4 | Tailscale: subnet router, exit node, Pi-hole everywhere | Pi | [05-tailscale](docs/05-tailscale.md) | ~20 min |
 | 5 | Docker + Uptime Kuma (+ optional Portainer, Home Assistant) | Pi | [06-docker-apps](docs/06-docker-apps.md) | ~15 min |
-| 6 | Media PC: hardware, BIOS, Ubuntu Server, drives | PC | [07-mediabox-setup](docs/07-mediabox-setup.md) | 2–3 h |
+| 6 | Media PC: GPU out, SSD and drives in ([walkthrough](docs/07a-hardware-walkthrough.md)), BIOS, Ubuntu Server | PC | [07-mediabox-setup](docs/07-mediabox-setup.md) | 3–4 h |
 | 7 | Jellyfin/Plex, Immich, Samba, backups | PC | [08-mediabox-apps](docs/08-mediabox-apps.md) | varies |
+| 8 | Run it like a small business: UPS, snapshots, off-site backups, alerts, HTTPS names | Both | [10-pro-layer](docs/10-pro-layer.md) | ongoing |
 | — | Routine care and fixes | Both | [09-maintenance-troubleshooting](docs/09-maintenance-troubleshooting.md) | — |
 
 Phases 1–5 don't depend on the PC, and 6–7 only need Phase 1. `./scripts/verify.sh`
@@ -54,24 +55,27 @@ checks whatever is installed on the machine it runs on.
 
 ## Before you start
 
-**Answer** (these change the instructions):
-1. Exact AX5400 model from the sticker (TP-Link / ASUS / Netgear menus differ; Netgear can't hand out a custom DNS server).
-2. Does the PC's case have 3.5" drive bays, and are you OK leaving it on 24/7? (Roughly $40–70/yr in electricity with the GTX 1070 Ti removed, depending on your rate.)
-3. Any smart-home devices? That decides whether Home Assistant is worth setting up.
-4. The storage questions in [research-questions.md](docs/research-questions.md). Needed for Phases 6–7.
+**Decided:** PC runs 24/7 out of the way; GTX 1070 Ti comes out; "run it like a small
+business"; Home Assistant for the bulbs, Google Home, HomePod mini and Nanoleaf (no radio stick needed).
 
-**Buy or gather:**
+**Still open:**
+1. Exact AX5400 model from the sticker. TP-Link / ASUS / Netgear menus differ, and Netgear can't hand out a custom DNS server.
+2. The [research brief](docs/research-brief.md): fill in 4 blanks, run it through a research LLM, paste the answer back.
+
+**Buy** (full list with models: [shopping list](docs/01-hardware-inventory.md#shopping-list)):
 - [ ] **New microSD**, 32–64 GB, A2, for the Pi. The robot's 128 GB card stays untouched.
 - [ ] **2 Ethernet cables**: router to Pi, router to PC.
+- [ ] **1 TB NVMe SSD** (PC boot drive) and a **USB stick**.
+- [ ] **2 identical 16–20 TB CMR hard drives**, whichever size is cheapest per TB.
+- [ ] Recommended: **UPS**, pure sine wave, 1000–1500 VA.
 - [ ] **52Pi case: keep or return this week.** It was bought around 13 Sep ([details](docs/01-hardware-inventory.md#spares-and-parts-from-the-robot-build)).
-- [ ] For the PC: **NVMe boot SSD** (500 GB–1 TB), a **USB stick**, and **hard drive(s)**, sized after research.
 
 The Pi stays on the Apple 20 W charger. No drives hang off it, so the 27 W PSU isn't needed.
 
 ## Layout
 
 ```
-docs/               phase guides, hardware inventory, research questions
+docs/               phase guides, hardware walkthrough, shopping list, research brief
 scripts/            Pi scripts, run in order; 05-install-docker.sh and verify.sh work on both machines
 scripts/mediabox/   media PC scripts
 config/             Unbound (Pi) and Samba (PC) config

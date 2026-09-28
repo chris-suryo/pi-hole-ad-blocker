@@ -10,8 +10,9 @@ lifting: video transcoding, photo processing, and the drives.
 | Why there | About 5 W, and simple. DNS must stay up even when the PC reboots | Intel Quick Sync, SATA drives, 16 GB RAM |
 | Address | `192.168.77.53` | `192.168.77.20` |
 
-**Time:** 2–3 hours, mostly the OS install and waiting. **Needs:** a boot SSD,
-at least one data drive, a USB stick (8 GB+), a monitor and keyboard for setup.
+**Time:** 3–4 hours including the hardware session. **Needs:** the parts on the
+[buy list](01-hardware-inventory.md#shopping-list), a USB stick (8 GB+), and a
+monitor and keyboard for setup.
 
 ## The hardware (as built)
 
@@ -19,37 +20,25 @@ at least one data drive, a USB stick (8 GB+), a monitor and keyboard for setup.
 |---|---|---|
 | CPU | i7-8700K, 6C/12T, UHD 630 iGPU | **Quick Sync** handles several simultaneous 1080p/4K transcodes at low power. Can't decode AV1 in hardware; the CPU covers the occasional AV1 file |
 | Board | ASUS ROG Strix Z370-E (BIOS 2201) | 6 SATA ports, 2 M.2 slots, Intel I219-V gigabit Ethernet |
-| GPU | GTX 1070 Ti | **Not needed.** See A3 |
+| GPU | GTX 1070 Ti | **Not needed.** Removed in the [hardware walkthrough](07a-hardware-walkthrough.md) |
 | RAM | 16 GB DDR4 | Enough for Plex/Jellyfin + Immich + Samba |
 | PSU | Corsair CX650M | Plenty; modular, so add SATA power cables for more drives |
 | Drives | None: the SSD and HDD moved to the new build | Needs a boot drive and data drive(s) |
 | OS | None (Windows went with the SSD) | Fresh install, so the OS is a free choice (section B) |
 
-## A. Hardware prep
+## A. Hardware session
 
-1. **Boot drive:** an NVMe SSD, 500 GB–1 TB, in an M.2 slot. It holds the OS, Docker,
-   Plex/Jellyfin metadata and the Immich database, which all benefit from SSD speed.
-   On Z370 boards some M.2 slots disable SATA ports when used. Check the
-   M.2/SATA sharing table in the Z370-E manual before plugging in data drives.
-2. **Data drive(s):** see [research-questions.md](research-questions.md). A sensible
-   start is one large CMR hard drive for media and photos, plus one for backups.
-   NAS-class drives (WD Red Plus, Seagate IronWolf, Toshiba N300) or recertified
-   enterprise drives are good value. Check the case has 3.5" bays.
-3. **Remove the GTX 1070 Ti (recommended).** Quick Sync does the transcoding. The card
-   only adds idle power draw, heat, and NVIDIA's proprietary driver on Linux. Put it
-   in the new build or sell it. Plug the monitor into the **motherboard's** HDMI/DP
-   port for setup.
-   *Keeping it anyway?* Then in the BIOS set **iGPU Multi-Monitor: Enabled**, or the
-   iGPU disappears and Quick Sync with it.
-4. **BIOS** (Del at boot, then F7 for Advanced Mode). Names may differ slightly:
-   - Advanced → System Agent (SA) Configuration → Graphics Configuration →
-     **Primary Display: IGFX** (or Auto with the 1070 Ti removed).
-   - Advanced → APM Configuration → **Restore AC Power Loss: Power On**. The server
-     comes back by itself after a power cut.
-   - Boot → CSM → **Disabled** (pure UEFI install).
-   - Optional: check ASUS support for a BIOS newer than 2201 (Intel security
-     microcode) and flash it with EZ Flash from a USB stick.
-5. Ethernet cable from the AX5400 to the PC.
+Follow **[07a-hardware-walkthrough.md](07a-hardware-walkthrough.md)**, a
+step-by-step guide for one session with the case open:
+
+1. Remove the GTX 1070 Ti. Quick Sync does the transcoding; the card would only add
+   idle power, heat and NVIDIA's driver on Linux.
+2. Install the NVMe boot SSD. It holds the OS, Docker, Plex/Jellyfin metadata and
+   the Immich database.
+3. Install the hard drives.
+4. BIOS: use the iGPU, **restart after a power cut**, pure UEFI.
+
+Then connect Ethernet from the AX5400 to the PC.
 
 ## B. Install Ubuntu Server
 
@@ -118,6 +107,11 @@ Tailscale is on. On the LAN, `mediabox.local` works too.
 node, plus SMART health for each drive.
 
 ## E. Data drive(s) (this ERASES them)
+
+> **Layout pending research.** With two identical drives, the planned "small
+> business" layout is a **ZFS mirror with snapshots** ([10-pro-layer.md](10-pro-layer.md)).
+> The exact steps get written once the [research brief](research-brief.md) confirms
+> it. The simple single-drive steps below are the fallback.
 
 ```bash
 lsblk -o NAME,SIZE,MODEL,FSTYPE,MOUNTPOINT   # find the data drive by SIZE and MODEL, e.g. sda
