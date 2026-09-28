@@ -66,14 +66,15 @@ The old i7-8700K PC becomes `mediabox`. Specs and what they mean are in
 
 ## Shopping list
 
-Decided 2026-09-28 ([decisions.md](decisions.md)). Prices were checked 2026-09-27;
-re-check on the day.
+Drives chosen 2026-09-28, with prices as of that day ([decisions.md](decisions.md)).
+Other prices were checked 2026-09-27; re-check on the day.
 
 ### Buy now
 
-| Item | Get this | Target price |
+| Item | Get this | Price |
 |---|---|---|
-| **2× hard drives** | **Identical pair, 20 or 22 TB, SATA, CMR, recertified enterprise:** WD Ultrastar **HC560** (20 TB) / **HC570** (22 TB), or Seagate Exos **X20 / X22** | ~$400–470 each, about $18–24/TB |
+| **2× hard drives** | **WD Ultrastar HC560 20 TB, SATA, recertified**, from **goHardDrive**, with the **5-year seller warranty**. Mirrored, they give **20 TB usable** | **$499.95 each** (~$1,000 total) |
+| **2× Molex-to-SATA power adapters** | **Crimped, not molded.** Put them in the same order as the drives. The CX650M may send 3.3 V on pin 3, which keeps these drives from spinning up; the adapters are the fix ([how](07a-hardware-walkthrough.md#troubleshooting)) | A few dollars |
 | NVMe SSD, 1 TB | Any reputable **TLC** PCIe 3.0/4.0 drive (WD Blue SN5000, Crucial P3 Plus, Samsung 990 EVO Plus). The Z370 runs it at PCIe 3.0 speed | |
 | UPS | **CyberPower CP1500PFCLCD** (1500 VA / 1000 W, pure sine, USB) | ~$240 on sale, $275 list |
 | microSD for the Pi | 32–64 GB, A2 (SanDisk Extreme, Samsung PRO Plus) | |
@@ -82,23 +83,26 @@ re-check on the day.
 
 **Before you click buy on the drives, check the listing:**
 
-- [ ] Says **SATA** (6 Gb/s), **not SAS**. SAS drives won't work on your motherboard.
-  The model number tells you. WD: WUH722020BL**E6**L4 = SATA, …BL**5204** = SAS.
-  Seagate: ST20000NM**007D** = SATA, …NM**002D** = SAS.
-- [ ] **Not** Ultrastar **HC6xx** (e.g. HC650/HC670/HC680). Those are host-managed SMR
-  and won't work in a normal PC.
-- [ ] Seller warranty **2–5 years** (ServerPartDeals, goHardDrive). Cheap "renewed"
-  marketplace listings often carry just 90 days, so skip them even if cheaper.
-- [ ] Both drives the **same model and size**. Buying from two sellers or a few days
-  apart avoids one bad batch taking out both.
+- [ ] The model number contains **LE6** (SATA), e.g. WUH722020BL**E6**…, **not L5** (SAS, e.g.
+  WUH722020BL**5**204). SAS drives won't work on your motherboard.
+- [ ] It's the **HC560 20 TB** (model starts WUH722020), not an Ultrastar **HC6xx**. Those
+  are host-managed SMR and won't work in a normal PC.
+- [ ] The **5-year** goHardDrive warranty applies to that listing.
+- [ ] Two identical drives. Optional: split them into two orders a few days apart, so
+  they're less likely to come from the same batch.
 
 Also check the motherboard box for SATA data cables before buying more.
 
-### Only if needed
+### If the HC560 is sold out
 
-| Item | When |
-|---|---|
-| Molex-to-SATA power adapter, **crimped** (not molded) | A recertified drive won't spin up ([why](07a-hardware-walkthrough.md#troubleshooting)) |
+Buy **two identical** drives from one of these, best value first (prices 2026-09-28):
+
+| Option | Price each | Notes |
+|---|---|---|
+| Seagate Exos 22 TB, recertified, goHardDrive | $599.95 | 22 TB usable. The listing must say SATA. Get the adapters too |
+| Seagate IronWolf Pro 20 TB, new, Micro Center | $569.99 | New, and no power-disable issue, so the adapters aren't needed |
+| ServerPartDeals Exos 22 TB | $649 | 3-year warranty; worse value |
+| Marketplace listings at $800+ | — | **Avoid** |
 
 ### Later (Phase 8), not now
 
