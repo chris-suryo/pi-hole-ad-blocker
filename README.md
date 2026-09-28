@@ -12,8 +12,8 @@ Step-by-step kit for a small home setup built from two machines you already own:
 DNS stays on the low-power Pi, so the internet keeps working when the PC reboots.
 The heavy work (video, photos, drives) goes to the PC.
 
-> **Status:** kit written; nothing installed yet. Work through the phases in order.
-> Drive sizes and backups need decisions first; see [research brief](docs/research-brief.md).
+> **Status:** decisions made ([decisions.md](docs/decisions.md)), parts to order, nothing installed yet.
+> Build order and what's left to write: [10-pro-layer.md](docs/10-pro-layer.md#build-order).
 
 ## What ends up running
 
@@ -27,12 +27,12 @@ AX5400 router ───── Wi-Fi + DHCP; tells every device "use the Pi for D
    ▼                                    ▼
 homepi  Raspberry Pi 5 (.53)          mediabox  i7-8700K PC (.20)
  ├─ Pi-hole     :53, /admin            ├─ Jellyfin  :8096   ┐ Quick Sync
- ├─ Unbound     :5335 (local)          ├─ Plex      :32400  ┘ transcoding
+ ├─ Unbound     :5335 (local)          ├─ Plex      :32400  ┘ transcoding (Plex optional)
  ├─ Tailscale   subnet + exit node     ├─ Immich    :2283   photos
  └─ Docker                             ├─ Samba             shares + Time Machine
      ├─ Uptime Kuma    :3001           ├─ Tailscale
-     ├─ Portainer      :9443 (opt.)    └─ /srv/storage      data drive(s)
-     └─ Home Assistant :8123 (opt.)
+     ├─ Portainer      :9443 (opt.)    └─ ZFS mirror "tank" 2× 20 TB → /srv/storage
+     └─ (Home Assistant → VM on the PC, Phase 8)
 ```
 
 ## Phases
@@ -47,7 +47,7 @@ homepi  Raspberry Pi 5 (.53)          mediabox  i7-8700K PC (.20)
 | 5 | Docker + Uptime Kuma (+ optional Portainer, Home Assistant) | Pi | [06-docker-apps](docs/06-docker-apps.md) | ~15 min |
 | 6 | Media PC: GPU out, SSD and drives in ([walkthrough](docs/07a-hardware-walkthrough.md)), BIOS, Ubuntu Server | PC | [07-mediabox-setup](docs/07-mediabox-setup.md) | 3–4 h |
 | 7 | Jellyfin/Plex, Immich, Samba, backups | PC | [08-mediabox-apps](docs/08-mediabox-apps.md) | varies |
-| 8 | Run it like a small business: UPS, snapshots, off-site backups, alerts, HTTPS names | Both | [10-pro-layer](docs/10-pro-layer.md) | ongoing |
+| 8 | Run it like a small business: backups to B2, UPS, HTTPS names, monitoring, Home Assistant VM | Both | [10-pro-layer](docs/10-pro-layer.md) | ongoing |
 | — | Routine care and fixes | Both | [09-maintenance-troubleshooting](docs/09-maintenance-troubleshooting.md) | — |
 
 Phases 1–5 don't depend on the PC, and 6–7 only need Phase 1. `./scripts/verify.sh`
@@ -55,30 +55,30 @@ checks whatever is installed on the machine it runs on.
 
 ## Before you start
 
-**Decided:** PC runs 24/7 out of the way; GTX 1070 Ti comes out; "run it like a small
-business"; Home Assistant for the bulbs, Google Home, HomePod mini and Nanoleaf (no radio stick needed).
+**Decided** ([decisions.md](docs/decisions.md)):
+- PC runs 24/7, out of the way: Ubuntu Server 26.04, a ZFS mirror of two 20–22 TB drives, Jellyfin, Immich.
+- Backups to Backblaze B2. CyberPower UPS.
+- HTTPS names via Caddy + Cloudflare.
+- Home Assistant as a VM on the PC.
 
-**Still open:**
-1. Exact AX5400 model from the sticker. TP-Link / ASUS / Netgear menus differ, and Netgear can't hand out a custom DNS server.
-2. The [research brief](docs/research-brief.md): fill in 4 blanks, run it through a research LLM, paste the answer back.
+**Still open:** confirm the router model on its sticker (the research assumed a TP-Link Archer AXE75).
 
-**Buy** (full list with models: [shopping list](docs/01-hardware-inventory.md#shopping-list)):
-- [ ] **New microSD**, 32–64 GB, A2, for the Pi. The robot's 128 GB card stays untouched.
-- [ ] **2 Ethernet cables**: router to Pi, router to PC.
-- [ ] **1 TB NVMe SSD** (PC boot drive) and a **USB stick**.
-- [ ] **2 identical 16–20 TB CMR hard drives**, whichever size is cheapest per TB.
-- [ ] Recommended: **UPS**, pure sine wave, 1000–1500 VA.
-- [ ] **52Pi case: keep or return this week.** It was bought around 13 Sep ([details](docs/01-hardware-inventory.md#spares-and-parts-from-the-robot-build)).
+**Order now** (models and buying checks: [shopping list](docs/01-hardware-inventory.md#shopping-list)):
+- [ ] **2 identical 20–22 TB hard drives**: SATA (not SAS), CMR, recertified enterprise with a 2–5 year warranty.
+- [ ] **1 TB NVMe SSD** (TLC) and a **USB stick**.
+- [ ] **UPS:** CyberPower CP1500PFCLCD.
+- [ ] **microSD**, 32–64 GB A2, for the Pi, and **2 Ethernet cables**.
+- [ ] **52Pi case: keep or return this week** ([details](docs/01-hardware-inventory.md#spares-and-parts-from-the-robot-build)).
 
-The Pi stays on the Apple 20 W charger. No drives hang off it, so the 27 W PSU isn't needed.
+**While parts ship:** do Phases 1–5 (router and Pi). They need only the microSD and a cable.
 
 ## Layout
 
 ```
-docs/               phase guides, hardware walkthrough, shopping list, research brief
+docs/               phase guides, hardware walkthrough, shopping list, decisions, research brief
 scripts/            Pi scripts, run in order; 05-install-docker.sh and verify.sh work on both machines
-scripts/mediabox/   media PC scripts
-config/             Unbound (Pi) and Samba (PC) config
+scripts/mediabox/   media PC scripts: bootstrap, drive burn-in, ZFS pool
+config/             Unbound (Pi); Samba, Sanoid, smartd (PC)
 stacks/             Docker apps: ./stacks/up.sh <name>; Immich: stacks/immich/setup.sh
 ```
 

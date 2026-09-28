@@ -1,5 +1,8 @@
 # Research brief: paste into a research-capable LLM
 
+> **Status: answered 2026-09-27.** Results and corrections are in
+> [decisions.md](decisions.md). Re-run this brief if you want fresh prices later.
+
 **How to use:**
 1. Fill in the four `[FILL IN]` lines below. "Unknown" is fine; the brief asks for
    options in that case.

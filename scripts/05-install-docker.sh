@@ -11,7 +11,13 @@ if ! command -v docker >/dev/null 2>&1; then
   installer="$(mktemp)"
   trap 'rm -f "$installer"' EXIT
   curl -fsSL https://get.docker.com -o "$installer"
-  sudo sh "$installer"
+  if ! sudo sh "$installer"; then
+    # Docker's script can lag behind a brand-new Ubuntu release; Ubuntu's own packages don't.
+    # shellcheck source=/dev/null
+    [[ "$(. /etc/os-release; echo "$ID")" == ubuntu ]] || die "Docker's installer failed."
+    warn "Docker's installer doesn't support this release yet; using Ubuntu's docker.io packages."
+    sudo DEBIAN_FRONTEND=noninteractive apt-get -y install docker.io docker-compose-v2
+  fi
 else
   ok "Docker already installed: $(docker --version)"
 fi

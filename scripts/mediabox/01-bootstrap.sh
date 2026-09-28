@@ -15,7 +15,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get -y full-upgrade
 info "Installing tools (SMART disk health, GPU monitoring)"
 sudo DEBIAN_FRONTEND=noninteractive apt-get -y install \
   curl ca-certificates git htop smartmontools intel-gpu-tools unattended-upgrades pciutils \
-  avahi-daemon   # makes mediabox.local resolve on the LAN, like homepi.local
+  tmux avahi-daemon   # tmux: long jobs survive SSH drops; avahi: mediabox.local works on the LAN
 # Host-side VA-API driver, only for the vainfo check below; the media containers bring their own.
 sudo DEBIAN_FRONTEND=noninteractive apt-get -y install vainfo intel-media-va-driver-non-free \
   || warn "Couldn't install vainfo/intel-media-va-driver-non-free; skipping the encoder check."

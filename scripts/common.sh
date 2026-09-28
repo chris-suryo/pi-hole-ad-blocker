@@ -75,3 +75,24 @@ intel_render_node() {
   done
   return 1
 }
+
+# Name of the physical disk holding / (e.g. nvme0n1), through any LVM/partition layers.
+root_disk() {
+  lsblk -nrso NAME,TYPE "$(findmnt -no SOURCE /)" | awk '$2 == "disk" {print $1; exit}'
+}
+
+# Dies unless $1 is a whole disk that is safe to erase: not the boot disk, nothing
+# on it mounted, not part of LVM or a ZFS pool. Prints the resolved /dev/sdX.
+safe_erase_target() {
+  local dev="$1" real name
+  real="$(readlink -f "$dev")"
+  [[ -b "$real" ]] || die "$dev is not a block device."
+  [[ "$(lsblk -dno TYPE "$real")" == disk ]] || die "$dev is a partition. Pass the whole disk (a /dev/disk/by-id/ata-... name without -partN)."
+  name="${real#/dev/}"
+  [[ "$name" != "$(root_disk)" ]] || die "$dev is the boot disk. Refusing."
+  if lsblk -nro MOUNTPOINT "$real" | grep -q .; then die "Something on $dev is mounted. Refusing."; fi
+  if lsblk -nro FSTYPE "$real" | grep -Eq 'LVM2_member|zfs_member'; then
+    die "$dev is part of LVM or a ZFS pool. Refusing."
+  fi
+  echo "$real"
+}

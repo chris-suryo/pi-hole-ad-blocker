@@ -44,17 +44,17 @@ Then connect Ethernet from the AX5400 to the PC.
 
 **Why Ubuntu Server:** it's free and uses the same Docker approach as the Pi, so the
 kit's app stacks run unchanged. Quick Sync works in containers with one line.
-Alternatives, if your research points elsewhere:
+Alternatives considered ([decisions.md](decisions.md)):
 
 | OS | Good | Trade-off |
 |---|---|---|
-| **Ubuntu Server LTS** (default) | Free, huge community, same tooling as the Pi | Everything is command line (Portainer adds a web UI) |
+| **Ubuntu Server 26.04 LTS** (chosen) | Free, huge community, same tooling as the Pi, ZFS built in | Everything is command line (Portainer adds a web UI) |
 | TrueNAS Community Edition | ZFS (checksums, snapshots), web UI, apps | Wants a whole boot disk and matched drives; more to learn |
 | Unraid | Mix-and-match drives, very popular for Plex | Paid licence |
 | Windows 11 | Plex runs natively | Immich needs Docker Desktop/WSL2 (awkward); forced update reboots |
 
 Steps:
-1. Download the latest **Ubuntu Server LTS (amd64)** ISO from ubuntu.com. Write it
+1. Download **Ubuntu Server 26.04 LTS (amd64)**, the latest point release, from ubuntu.com. Write it
    to a USB stick with Raspberry Pi Imager (**Choose OS → Use custom**) or balenaEtcher.
 2. Boot the PC from the stick (F8 at power-on opens the boot menu on ASUS boards).
 3. In the installer:
@@ -106,32 +106,72 @@ Tailscale is on. On the LAN, `mediabox.local` works too.
 `verify.sh` on this machine should show a **Quick Sync** line with an Intel render
 node, plus SMART health for each drive.
 
-## E. Data drive(s) (this ERASES them)
+## E. Drives: burn-in, then a ZFS mirror
 
-> **Layout pending research.** With two identical drives, the planned "small
-> business" layout is a **ZFS mirror with snapshots** ([10-pro-layer.md](10-pro-layer.md)).
-> The exact steps get written once the [research brief](research-brief.md) confirms
-> it. The simple single-drive steps below are the fallback.
+The two data drives become one **ZFS mirror** called `tank`: each drive holds a
+full copy, so either can die without losing data or going offline. It's mounted at
+`/srv/storage` and split into datasets (`media`, `photos`, `shared`,
+`timemachine`, `backups`) with automatic snapshots.
+Reasoning: [decisions.md](decisions.md).
+
+### E1. Find the drives' stable names
 
 ```bash
-lsblk -o NAME,SIZE,MODEL,FSTYPE,MOUNTPOINT   # find the data drive by SIZE and MODEL, e.g. sda
-# Everything below uses sda. Check twice: the boot SSD is nvme0n1, never touch it.
-sudo parted /dev/sda --script mklabel gpt mkpart storage ext4 0% 100%
-sudo mkfs.ext4 -L storage /dev/sda1
-sudo mkdir -p /srv/storage
-echo "UUID=$(sudo blkid -s UUID -o value /dev/sda1) /srv/storage ext4 defaults,noatime,nofail,x-systemd.device-timeout=10s 0 2" | sudo tee -a /etc/fstab
-sudo systemctl daemon-reload && sudo mount -a
-sudo mkdir -p /srv/storage/{media/{movies,tv,music},photos,shared,timemachine}
-sudo chown -R "$USER:$USER" /srv/storage
-df -h /srv/storage
+ls -l /dev/disk/by-id/ | grep ata- | grep -v part
 ```
 
-`nofail` lets the PC boot even if a drive dies or is unplugged. A second (backup)
-drive gets the same treatment, mounted at `/srv/backup`; the backup job comes in
-[Phase 7](08-mediabox-apps.md#7-backups-dont-skip).
+Use these `ata-<model>_<serial>` names from now on. `/dev/sda`-style names can
+swap between reboots. The boot SSD shows up as `nvme-…`; never pass that one.
+
+### E2. Burn-in (about 4 days, destroys everything on the drives)
+
+Recertified drives earn trust by passing this, not by their label. Run it in `tmux`
+so it keeps going when you close SSH:
+
+```bash
+tmux new -s burnin
+cd ~/homelab
+./scripts/mediabox/02-burn-in.sh /dev/disk/by-id/ata-AAAA /dev/disk/by-id/ata-BBBB
+# type ERASE, then detach with Ctrl-b d. Check later with: tmux attach -t burnin
+```
+
+Both drives are tested at the same time: SMART short test, then writing and reading
+back every sector, then a SMART long test. The script refuses the boot disk and
+anything mounted. Logs are in `~/burn-in/<date>/`. **Do the Pi phases (2–5) while
+this runs.**
+
+A **FAIL** means returning that drive under warranty. The exception is
+`UDMA_CRC_Error_Count` on its own, which usually means a bad SATA cable: swap it
+and re-test.
+
+### E3. Create the mirror
+
+```bash
+./scripts/mediabox/03-create-pool.sh /dev/disk/by-id/ata-AAAA /dev/disk/by-id/ata-BBBB
+```
+
+The script:
+- creates `tank` with sensible settings (4K sectors, compression, macOS-friendly metadata)
+- creates the datasets and caps Time Machine at 2 TB (change with `TM_QUOTA=1.5T`)
+- installs automatic snapshots: [`config/sanoid/sanoid.conf`](../config/sanoid/sanoid.conf)
+- installs drive self-tests: [`config/smartd/smartd.conf`](../config/smartd/smartd.conf)
+- makes Docker wait for the pool at boot, so apps never write to the bare folder underneath
+
+Ubuntu's ZFS package already scrubs (verifies every block) monthly.
+
+### E4. Check
+
+```bash
+./scripts/verify.sh          # ZFS healthy, SMART PASSED, snapshots appearing within the hour
+sudo zpool status tank       # both drives ONLINE under "mirror-0"
+```
+
+**Undo a mistake:** `ls /srv/storage/photos/.zfs/snapshot/` lists snapshots; copy
+files back out of any of them.
 
 ## Done when
 
 - [ ] `ssh <you>@mediabox` works (over Tailscale) and the PC has the reserved `192.168.77.20`
-- [ ] `./scripts/verify.sh`: Quick Sync found, SMART PASSED, `/srv/storage` mounted, no FAIL lines
+- [ ] Both drives PASSED burn-in, and `tank` shows both ONLINE
+- [ ] `./scripts/verify.sh`: Quick Sync found, SMART PASSED, ZFS healthy, no FAIL lines
 - [ ] Pulling the power cord and plugging it back in makes the PC boot by itself

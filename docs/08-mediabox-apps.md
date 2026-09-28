@@ -22,10 +22,10 @@ nano stacks/.env                        # set TZ, RENDER_GID=<that number>, chec
 | Apps | Good: web, iOS/Android, Android/Google TV, Fire TV, Roku, Apple TV (Swiftfin or Infuse) | The most polished, on nearly every TV |
 | Sharing with friends (e.g. Paul) | Share the `mediabox` machine to their tailnet, or give them an account over a public URL | Built in, with the remote-viewing fee above |
 
-**Suggestion: run both for a few weeks.** They read the same media folder
-(read-only), and the 8700K barely notices. Keep whichever the household actually
-uses. Without Plex Pass, Plex still works at home for files the TV can play
-directly; Jellyfin covers everything else.
+**Decision: Jellyfin** ([decisions.md](decisions.md)). Add Plex alongside it only if
+a TV has a clearly better Plex app, or to share with a friend who won't use
+Tailscale. Both read the same media folder (read-only), so adding Plex later
+costs nothing. Note that Plex counts viewing over Tailscale as remote, which is paid.
 
 ## 3. Jellyfin
 
@@ -91,8 +91,18 @@ import of a big library takes a while; let it run overnight.
 Quick Sync in Administration → Settings → Video Transcoding.
 
 **Keep iCloud running** until Immich has everything and you've tested a restore
-from backup. Migrating the existing library (originals, Live Photos, albums) is
-its own step; see [research-brief.md](research-brief.md).
+from backup.
+
+**Migrating your existing iCloud library** (chosen method):
+1. Request a copy of your iCloud Photos at privacy.apple.com. Apple takes up to a
+   week and delivers it in many zip parts.
+2. Keep the downloaded zips untouched in `/srv/storage/shared/icloud-export/`.
+   They're the archive of record.
+3. Import with **immich-go** (v0.32 or newer, which supports Immich v3):
+   `immich-go upload from-icloud --server=http://mediabox:2283 --api-key=<key> --memories <export folder>`.
+   Create the API key in Immich → Account Settings → API Keys.
+4. Compare counts, then spot-check Live Photos, videos, edited photos, albums, dates
+   and locations before shrinking the iCloud plan.
 
 ## 6. File shares and Time Machine (Samba)
 
@@ -117,8 +127,9 @@ testparm -s >/dev/null && sudo systemctl restart smbd
 | Pi-hole settings | Media PC | Web admin → Settings → Teleporter → Export; save to the `shared` folder |
 | Media library | Optional | Re-obtainable, so usually excluded |
 
-The backup tool (restic is the likely choice) and the off-site target depend on the
-research answers. They'll be scripted once the drives are chosen. Until then:
+**Chosen:** Backrest (web UI) + restic, backing up to `tank/backups` and to
+**Backblaze B2** off-site. Step-by-step setup is Phase 8, step 5
+([10-pro-layer.md](10-pro-layer.md)). Until it's running and a restore has been tested:
 **don't delete anything from iCloud or your phone.**
 
 ## 8. Monitoring and dashboard

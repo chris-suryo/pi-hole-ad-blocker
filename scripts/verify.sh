@@ -171,6 +171,25 @@ if have smartctl; then
   done < <(lsblk -dno NAME,TYPE | awk '$2 == "disk" && $1 !~ /^(mmcblk|zram|loop)/ {print $1}')
 fi
 
+if have zpool && [[ -n "$(sudo zpool list -H -o name 2>/dev/null)" ]]; then
+  section "ZFS"
+  health="$(sudo zpool status -x 2>&1)"
+  if [[ "$health" == "all pools are healthy" ]]; then pass "All pools healthy"
+  else bad "Pool problem: $(echo "$health" | grep -m1 -E 'state:|status:')  (run: sudo zpool status)"
+  fi
+  while read -r name cap; do
+    cap="${cap%\%}"
+    if (( cap < 80 )); then pass "Pool ${name} ${cap}% full"
+    elif (( cap < 90 )); then soft "Pool ${name} ${cap}% full: plan more space"
+    else bad "Pool ${name} ${cap}% full: ZFS slows down badly when nearly full"
+    fi
+  done < <(sudo zpool list -H -o name,cap)
+  last_snap="$(sudo zfs list -H -t snapshot -o name -s creation 2>/dev/null | tail -1)"
+  if [[ -n "$last_snap" ]]; then pass "Latest snapshot: ${last_snap}"
+  else soft "No snapshots yet. Is sanoid.timer running? (systemctl list-timers | grep sanoid)"
+  fi
+fi
+
 section "Storage"
 if mountpoint -q /srv/storage; then
   use="$(df --output=pcent /srv/storage | tail -1 | tr -dc '0-9')"

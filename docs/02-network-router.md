@@ -109,6 +109,20 @@ brand's support site for the name in bold.
 | **Address reservation** | Advanced → Network → DHCP Server → **Address Reservation** | LAN → DHCP Server → **Manually Assigned IP** | LAN Setup → **Address Reservation** |
 | **DNS handed to devices** | DHCP Server → **Primary / Secondary DNS** | LAN → DHCP Server → **DNS Server 1 / 2** | Not available: WAN DNS only (see Phase 3) |
 
+## TP-Link Archer notes (your router)
+
+The research assumed an **Archer AXE75 (AXE5400)**. Confirm the model on the sticker.
+The notes below apply to current Archer AX/AXE models either way.
+
+- **Firmware:** the sticker also shows the **hardware version** (e.g. "Ver: 2.6").
+  TP-Link publishes separate firmware per hardware version, so download the one that
+  matches exactly. Or just use the router's built-in online update.
+- **DNS for devices:** Advanced → Network → DHCP Server → Primary DNS (Phase 3).
+- **IPv6:** Advanced → IPv6. Leave it on for now; Phase 3 checks whether it leaks DNS.
+- **Guest/IoT Wi-Fi:** Advanced → Wireless → Guest Network. Fine for visitors.
+  **Don't** move smart-home gear onto it yet: isolation blocks the local discovery that
+  Matter, HomeKit, Nanoleaf and Home Assistant rely on.
+
 ## Rollback
 
 - **Undo bridge mode:** plug a laptop directly into the gateway by Ethernet, go to

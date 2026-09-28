@@ -78,10 +78,11 @@ created inside Portainer exist nowhere else.
 Portainer controls Docker, which is root-level control of the Pi. It's only
 reachable on your LAN and tailnet. Keep it that way.
 
-## Optional: Home Assistant
+## Optional: Home Assistant (fallback)
 
-Only worth it if you have smart-home devices (lights, plugs, thermostat, cameras)
-or plan to buy some.
+> **Decision:** Home Assistant will run as **HA OS in a VM on the media PC**
+> ([decisions.md](decisions.md)), because Matter support is only official there. Use this
+> Pi container only as a quick way to try it out beforehand; its settings don't carry over.
 
 ```bash
 ./stacks/up.sh home-assistant
