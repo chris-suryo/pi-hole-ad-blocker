@@ -29,7 +29,7 @@ next one starts.
 |---|---|
 | **3-2-1 backups** | Photos exist on the ZFS mirror, in local restic backups, and in B2. Snapshots are not backups |
 | **Restore drill** | Every quarter, restore a random folder from B2 and log the date in [decisions.md](decisions.md) |
-| **No open ports** | Nothing is port-forwarded. Remote access is Tailscale only |
-| **Updates by hand** | OS security patches are automatic. Containers get updated monthly after Diun flags them and you've read the release notes |
+| **One open port** | Only TCP 32400 → mediabox (Plex, for friends and family), on a 2FA-protected account with Plex kept updated. Seerr is reached through plex-server's Cloudflare Tunnel (no port). Everything else is Tailscale only |
+| **Updates by hand** | OS security patches are automatic. Containers get updated monthly after Diun flags them and you've read the release notes. **Exception: Plex faces the internet, so update it within days of a release** |
 | **Password manager + 2FA** | Every admin login in a password manager; 2FA on Tailscale, Cloudflare, Backblaze, GitHub and email |
 | **Write it down** | Changes go in this repo: config in `stacks/` and `config/`, reasons in [decisions.md](decisions.md), fixes in [09](09-maintenance-troubleshooting.md) |

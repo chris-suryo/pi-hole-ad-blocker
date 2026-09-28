@@ -44,13 +44,17 @@ else
   ok "Created mirror '$pool'"
 fi
 
-for ds in media photos shared timemachine backups; do
+# "data" holds media AND downloads (chris-suryo/plex-server). It must stay one dataset:
+# hardlinks can't cross datasets, and without them every import is a full copy.
+# It keeps ZFS's default 128K records: torrent clients write small random pieces,
+# which large (1M) records turn into read-modify-write churn.
+for ds in data photos shared timemachine backups; do
   sudo zfs list -H "$pool/$ds" >/dev/null 2>&1 || sudo zfs create "$pool/$ds"
 done
-sudo zfs set recordsize=1M "$pool/media"          # big sequential video files
 sudo zfs set quota="$tm_quota" "$pool/timemachine" # Time Machine would otherwise fill the pool
-sudo chown "$USER:$USER" "$mnt"/{media,photos,shared,timemachine,backups}
-mkdir -p "$mnt"/media/{movies,tv,music}
+sudo chown "$USER:$USER" "$mnt"/{data,photos,shared,timemachine,backups}
+# plex-server's bootstrap.sh adds data/torrents and data/usenet and tests hardlinks.
+mkdir -p "$mnt"/data/media/{movies,tv,music}
 ok "Datasets: $(sudo zfs list -H -o name -r "$pool" | tr '\n' ' ')"
 
 # Without this, Docker can start before the pool mounts at boot and apps would write

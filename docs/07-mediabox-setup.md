@@ -110,9 +110,26 @@ node, plus SMART health for each drive.
 
 The two data drives become one **ZFS mirror** called `tank`: each drive holds a
 full copy, so either can die without losing data or going offline. It's mounted at
-`/srv/storage` and split into datasets (`media`, `photos`, `shared`,
-`timemachine`, `backups`) with automatic snapshots.
+`/srv/storage` and split into datasets with automatic snapshots.
 Reasoning: [decisions.md](decisions.md).
+
+| Dataset | Path | Holds |
+|---|---|---|
+| `tank/data` | `/srv/storage/data` | `media/{movies,tv,music}` plus the downloads (`torrents`, `usenet`) from [chris-suryo/plex-server](https://github.com/chris-suryo/plex-server) |
+| `tank/photos` | `/srv/storage/photos` | Immich library |
+| `tank/shared` | `/srv/storage/shared` | Samba file share |
+| `tank/timemachine` | `/srv/storage/timemachine` | Mac backups (2 TB cap) |
+| `tank/backups` | `/srv/storage/backups` | Local restic backups |
+
+**Media and downloads must stay in the one `data` dataset.** Sonarr and Radarr
+hardlink finished downloads into `media/` instead of copying them. Hardlinks can't
+cross datasets, so a split would double the space used and turn every import
+into a full copy. plex-server's `bootstrap.sh` creates `torrents/` and `usenet/`
+and tests that hardlinks work.
+
+Without ZFS, the equivalent layout is
+`sudo mkdir -p /srv/storage/{data/media/{movies,tv,music},photos,shared,timemachine}`,
+all on one filesystem.
 
 ### E1. Find the drives' stable names
 
@@ -152,7 +169,7 @@ and re-test.
 
 The script:
 - creates `tank` with sensible settings (4K sectors, compression, macOS-friendly metadata)
-- creates the datasets and caps Time Machine at 2 TB (change with `TM_QUOTA=1.5T`)
+- creates the datasets above plus `data/media/{movies,tv,music}`, and caps Time Machine at 2 TB (change with `TM_QUOTA=1.5T`)
 - installs automatic snapshots: [`config/sanoid/sanoid.conf`](../config/sanoid/sanoid.conf)
 - installs drive self-tests: [`config/smartd/smartd.conf`](../config/smartd/smartd.conf)
 - makes Docker wait for the pool at boot, so apps never write to the bare folder underneath

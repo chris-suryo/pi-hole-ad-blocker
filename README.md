@@ -26,12 +26,13 @@ AX5400 router ───── Wi-Fi + DHCP; tells every device "use the Pi for D
    │ Ethernet                           │ Ethernet
    ▼                                    ▼
 homepi  Raspberry Pi 5 (.53)          mediabox  i7-8700K PC (.20)
- ├─ Pi-hole     :53, /admin            ├─ Jellyfin  :8096   ┐ Quick Sync
- ├─ Unbound     :5335 (local)          ├─ Plex      :32400  ┘ transcoding (Plex optional)
+ ├─ Pi-hole     :53, /admin            ├─ Plex      :32400  ┐ Quick Sync; Plex shared with
+ ├─ Unbound     :5335 (local)          ├─ Jellyfin  :8096   ┘ friends (port 32400 forwarded)
  ├─ Tailscale   subnet + exit node     ├─ Immich    :2283   photos
  └─ Docker                             ├─ Samba             shares + Time Machine
      ├─ Uptime Kuma    :3001           ├─ Tailscale
-     ├─ Portainer      :9443 (opt.)    └─ ZFS mirror "tank" 2× 20 TB → /srv/storage
+     ├─ Portainer      :9443 (opt.)    ├─ ZFS mirror "tank" 2× 20 TB → /srv/storage
+     │                                 └─ plex-server stack (separate repo): Seerr, Sonarr, Radarr, …
      └─ (Home Assistant → VM on the PC, Phase 8)
 ```
 
@@ -56,7 +57,7 @@ checks whatever is installed on the machine it runs on.
 ## Before you start
 
 **Decided** ([decisions.md](docs/decisions.md)):
-- PC runs 24/7, out of the way: Ubuntu Server 26.04, a ZFS mirror of two 20–22 TB drives, Jellyfin, Immich.
+- PC runs 24/7, out of the way: Ubuntu Server 26.04, a ZFS mirror of two 20–22 TB drives, Plex (Plex Pass, shared with friends and family; Jellyfin optional), Immich.
 - Backups to Backblaze B2. CyberPower UPS.
 - HTTPS names via Caddy + Cloudflare.
 - Home Assistant as a VM on the PC.
@@ -89,4 +90,4 @@ stacks/             Docker apps: ./stacks/up.sh <name>; Immich: stacks/immich/se
 - The kit is cloned to `~/homelab` on each machine. Scripts run as your normal user and `sudo` when needed.
 - **This repo is public.** No passwords, keys, tokens or `.env` files go in it
   (`.gitignore` covers the generated ones). App data lives in `/srv/appdata`, outside the checkout.
-- **Not included:** torrent/download automation (qBittorrent, Sonarr, Radarr).
+- Media automation (requests, Sonarr/Radarr, downloaders) lives in chris-suryo/plex-server and runs on mediabox after Phases 6-7.

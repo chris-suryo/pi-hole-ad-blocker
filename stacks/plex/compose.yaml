@@ -1,8 +1,9 @@
-# Plex. Runs on the media PC, alongside or instead of Jellyfin (same media, read-only).
+# Plex: the main media server, shared with friends and family (docs/08-mediabox-apps.md §4).
+# Runs on the media PC; Jellyfin can run alongside it on the same media, read-only.
 # 1. Get a claim token (valid 4 minutes): https://www.plex.tv/claim
 # 2. PLEX_CLAIM=claim-xxxx ./stacks/up.sh plex
 # 3. Open http://mediabox:32400/web
-# Hardware transcoding and streaming outside the home need Plex Pass; see docs/08-mediabox-apps.md.
+# Hardware transcoding and remote streaming for shared users come with the owner's Plex Pass.
 services:
   plex:
     image: lscr.io/linuxserver/plex:latest
@@ -19,4 +20,4 @@ services:
       - PLEX_CLAIM=${PLEX_CLAIM:-}
     volumes:
       - ${APPDATA:-/srv/appdata}/plex:/config
-      - ${MEDIA_DIR:-/srv/storage/media}:/media:ro
+      - ${MEDIA_DIR:-/srv/storage/data/media}:/media:ro

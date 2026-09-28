@@ -16,7 +16,7 @@ services:
       - "7359:7359/udp" # lets apps on the LAN discover the server
     volumes:
       - ${APPDATA:-/srv/appdata}/jellyfin:/config
-      - ${MEDIA_DIR:-/srv/storage/media}:/media:ro
+      - ${MEDIA_DIR:-/srv/storage/data/media}:/media:ro
     environment:
       - TZ=${TZ:-Etc/UTC}
       # Keep the cache inside the one data folder up.sh creates.

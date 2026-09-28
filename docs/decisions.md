@@ -3,6 +3,17 @@
 Why things are the way they are. Newest first. Add an entry whenever a choice
 changes, so future you (or anyone helping) doesn't have to reverse-engineer it.
 
+## 2026-09-28: plex-server joins; Plex becomes the shared server
+
+| Area | Decision | Why / notes |
+|---|---|---|
+| Split of repos | **This repo:** platform (Pi, router, media PC OS/ZFS) plus Plex/Jellyfin. **[chris-suryo/plex-server](https://github.com/chris-suryo/plex-server):** media automation (Seerr, Sonarr, Radarr, Prowlarr, Bazarr, Recyclarr, Tautulli, SABnzbd / qBittorrent + Gluetun, Unpackerr, Cloudflare Tunnel for Seerr only) | Supersedes "torrent automation out of scope" |
+| Shared contract | mediabox `192.168.77.20`; PUID/PGID 1000; app data `/srv/appdata/<app>`; media + downloads in `/srv/storage/data/{media/{movies,tv},torrents,usenet}`; plex-server owns ports 5055, 8989, 7878, 9696, 6767, 8181, 8085, 8080 | Port map: [08 §9](08-mediabox-apps.md#9-port-map-shared-with-plex-server). Change either side only together with the other |
+| Storage | ZFS dataset `media` replaced by **`data`** (media + downloads in one dataset); `MEDIA_DIR=/srv/storage/data/media` | Hardlinks can't cross datasets. `data` keeps the default 128K recordsize (torrent writes) and **3 daily snapshots** (undo a mistaken delete without hoarding download churn) |
+| Media server | **Plex with Plex Pass** is primary; Jellyfin optional | Friends and family outside the tailnet stream via Plex; the owner's Plex Pass covers them and unlocks Quick Sync. Supersedes "Jellyfin primary" below |
+| Remote access | **TCP 32400 → 192.168.77.20 forwarded**: the only open port. Remote bitrate capped at 8 Mbps (1080p); 2FA on the Plex account; Plex updated promptly | Supersedes "no open ports". Seerr uses a Cloudflare Tunnel (outbound only) |
+| Backups | Add `~/plex-server/.env`; exclude `/srv/storage/data/{torrents,usenet}` | `/srv/appdata` already covers the plex-server apps |
+
 ## 2026-09-28: Research results applied
 
 Source: the [research brief](research-brief.md), run through an external research
