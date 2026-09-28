@@ -97,6 +97,7 @@ devices, including smart-home gadgets, reconnect without you touching them.
 | DHCP reservation for the Pi | Phase 2, once the Pi is plugged in |
 | DHCP DNS server = the Pi | Phase 3, **after** Pi-hole is tested |
 | IPv6 DNS behaviour | Phase 3 check. Leave IPv6 on for now |
+| Port forward TCP 32400 → `192.168.77.20` (Plex) | Phase 7, [08-mediabox-apps.md §4](08-mediabox-apps.md#remote-access-for-friends-and-family). The only forwarded port |
 
 ## Where the settings live (AX5400 brands)
 
@@ -118,6 +119,8 @@ The notes below apply to current Archer AX/AXE models either way.
   TP-Link publishes separate firmware per hardware version, so download the one that
   matches exactly. Or just use the router's built-in online update.
 - **DNS for devices:** Advanced → Network → DHCP Server → Primary DNS (Phase 3).
+- **Port forwarding:** Advanced → NAT Forwarding → Virtual Servers. Only Plex's
+  32400 goes here (Phase 7).
 - **IPv6:** Advanced → IPv6. Leave it on for now; Phase 3 checks whether it leaks DNS.
 - **Guest/IoT Wi-Fi:** Advanced → Wireless → Guest Network. Fine for visitors.
   **Don't** move smart-home gear onto it yet: isolation blocks the local discovery that
