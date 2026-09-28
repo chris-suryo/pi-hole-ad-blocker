@@ -3,6 +3,24 @@
 Why things are the way they are. Newest first. Add an entry whenever a choice
 changes, so future you (or anyone helping) doesn't have to reverse-engineer it.
 
+## 2026-09-28: Drives chosen
+
+Prices as of 2026-09-28.
+
+| Area | Decision | Why / notes |
+|---|---|---|
+| Data drives | **2× WD Ultrastar HC560 20 TB, SATA, recertified**, from **goHardDrive** at **$499.95 each** (~$1,000 total), with a **5-year seller warranty**. Mirrored: **20 TB usable** | Lowest price per TB of the options priced that day ($25.00/TB). The model number must contain **LE6** (SATA, e.g. WUH722020BLE6…), **not L5** (SAS). Supersedes the $400–470 target in the research entry below |
+| Power adapters | **2× crimped (not molded) Molex-to-SATA power adapters**, in the same order | The CX650M may send 3.3 V on pin 3, which keeps these drives from spinning up. The fix is in [07a troubleshooting](07a-hardware-walkthrough.md#troubleshooting). Molex carries no 3.3 V. Crimped, because molded adapters are a known melting risk |
+
+**Alternatives considered** (per drive; a mirror needs two identical drives):
+
+| Option | Price | $/TB | Why not |
+|---|---|---|---|
+| Seagate Exos 22 TB, recertified, goHardDrive | $599.95 | $27.27 | 22 TB usable, but $200 more for the pair |
+| Seagate IronWolf Pro 20 TB, **new**, Micro Center | $569.99 | $28.50 | New, and no power-disable issue, but ~$140 more for the pair |
+| ServerPartDeals Exos 22 TB | $649 | $29.50 | 3-year warranty; worse value (~$300 more for the pair) |
+| Marketplace listings | $800+ | — | Avoid |
+
 ## 2026-09-28: plex-server joins; Plex becomes the shared server
 
 | Area | Decision | Why / notes |
